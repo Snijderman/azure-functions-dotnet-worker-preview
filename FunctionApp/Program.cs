@@ -5,33 +5,43 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Azure.Functions.Worker.Configuration;
 using FunctionApp.Middleware;
+using System;
 
 namespace FunctionApp
 {
-    class Program
-    {
-        static async Task Main(string[] args)
-        {
-// #if DEBUG
-//             Debugger.Launch();
-// #endif
+   class Program
+   {
+      public static async Task Main(string[] args)
+      {
+#if DEBUG
+         //Debugger.Launch();
+#endif
+         try
+         {
             var host = new HostBuilder()
                 .ConfigureAppConfiguration(c =>
                 {
-                    c.AddCommandLine(args);
+                   c.AddCommandLine(args);
                 })
                 .ConfigureFunctionsWorker((c, b) =>
                 {
-                    b.UseSampleMiddleware();
-                    b.UseFunctionExecutionMiddleware();
+                   b.UseSampleMiddleware();
+                   b.UseFunctionExecutionMiddleware();
                 })
                 .ConfigureServices(s =>
                 {
-                    s.AddSingleton<IHttpResponderService, DefaultHttpResponderService>();
+                   s.AddSingleton<IHttpResponderService, DefaultHttpResponderService>();
                 })
                 .Build();
 
             await host.RunAsync();
-        }
-    }
+         }
+         catch (System.Exception exc)
+         {
+            var error = exc.ToString();
+            Console.WriteLine($"Error while starting function app:\r\n{error}");
+         }
+
+      }
+   }
 }

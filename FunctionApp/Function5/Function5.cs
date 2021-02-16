@@ -8,49 +8,53 @@ using Microsoft.Extensions.Logging;
 
 namespace FunctionApp
 {
-    public class Function5
-    {
-        private readonly IHttpResponderService _responderService;
+   public class Function5
+   {
+      private readonly IHttpResponderService _responderService;
 
-        public Function5(IHttpResponderService responderService)
-        {
-            _responderService = responderService;
-        }
+      public Function5(IHttpResponderService responderService)
+      {
+         _responderService = responderService;
+      }
 
-        [FunctionName(nameof(Function5))]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequestData req,
-            FunctionExecutionContext executionContext)
-        {
-            var logger = executionContext.Logger;
-            logger.LogInformation("message logged");
+      [FunctionName(nameof(Function5))]
+      public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequestData req,
+          FunctionExecutionContext executionContext)
+      {
+         var logger = executionContext.Logger;
+         logger.LogInformation("message logged");
 
-            return _responderService.ProcessRequest(req);
-        }
-    }
+         return _responderService.ProcessRequest(req, executionContext);
+      }
+   }
 
-    public interface IHttpResponderService
-    {
-        HttpResponseData ProcessRequest(HttpRequestData httpRequest);
-    }
+   public interface IHttpResponderService
+   {
+      HttpResponseData ProcessRequest(HttpRequestData httpRequest, FunctionExecutionContext executionContext);
+   }
 
-    public class DefaultHttpResponderService : IHttpResponderService
-    {
-        public DefaultHttpResponderService()
-        {
+   public class DefaultHttpResponderService : IHttpResponderService
+   {
+      public DefaultHttpResponderService()
+      {
 
-        }
+      }
 
-        public HttpResponseData ProcessRequest(HttpRequestData httpRequest)
-        {
-            var response = new HttpResponseData(HttpStatusCode.OK);
-            var headers = new Dictionary<string, string>();
-            headers.Add("Date", "Mon, 18 Jul 2016 16:06:00 GMT");
-            headers.Add("Content", "Content - Type: text / html; charset = utf - 8");
+      public HttpResponseData ProcessRequest(HttpRequestData httpRequest, FunctionExecutionContext executionContext)
+      {
+         var response = new HttpResponseData(HttpStatusCode.OK);
+         var headers = new Dictionary<string, string>();
+         headers.Add("Date", "Mon, 18 Jul 2016 16:06:00 GMT");
+         headers.Add("Content", "Content - Type: text / html; charset = utf - 8");
+         if (executionContext?.Items.ContainsKey("Greeting") == true)
+         {
+            headers.Add("Greeting", $"{executionContext.Items["Greeting"]}");
+         }
 
-            response.Headers = headers;
-            response.Body = "Welcome to .NET 5!!";
+         response.Headers = headers;
+         response.Body = "Welcome to .NET 5!!";
 
-            return response;
-        }
-    }
+         return response;
+      }
+   }
 }
